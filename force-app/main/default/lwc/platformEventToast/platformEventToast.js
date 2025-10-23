@@ -17,7 +17,7 @@ export default class PlatformEventToast extends LightningElement {
     @api showOnPageLoad = false;
     @api showDelay = 1000;
     @api showOnlyOnce = false;
-    @api usePlatformEvents = true; // Toggle between platform events and page load
+    @api usePlatformEvents = false; // Changed from true to false
     
     channelName = '/event/Toast_Event__e';
     subscription = {};
@@ -30,14 +30,15 @@ export default class PlatformEventToast extends LightningElement {
         }
         
         // Subscribe to platform events if enabled
-        if (this.usePlatformEvents) {
+        // Default to true for backward compatibility if not explicitly set to false
+        if (this.usePlatformEvents !== false) {
             this.registerErrorListener();
             this.handleSubscribe();
         }
     }
 
     disconnectedCallback() {
-        if (this.usePlatformEvents && this.subscription) {
+        if (this.usePlatformEvents !== false && this.subscription) {
             this.handleUnsubscribe();
         }
     }
