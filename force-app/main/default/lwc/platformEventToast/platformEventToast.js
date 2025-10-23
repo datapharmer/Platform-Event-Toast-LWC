@@ -1,96 +1,82 @@
-/*
-*	Author:- Rahul Malhotra
-*	Description:- Platform Event Toast
-*	Created:- 11/04/2020
-*	Last Updated:- 03/10/2021
-*	Code Origin:- SFDCStop (https://www.sfdcstop.com/)
-*   Change Log
-*   ----------
-*   SNo.    Date        Description
-*    1      03/10/2021  Added namespace fix and record id check
-*/
 import { LightningElement, api } from 'lwc';
-import { subscribe, unsubscribe, onError } from 'lightning/empApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import currentUserId from '@salesforce/user/Id';
+import { subscribe, unsubscribe, onError } from 'lightning/empApi';
+import userId from '@salesforce/user/Id';
 
 export default class PlatformEventToast extends LightningElement {
+    // Existing design-time props
+    @api key;                 // App Builder "Key" to match platform events
+    @api runInSystemMode = false;
 
-    @api toastKeys;
-    @api toastTitle;
-    @api toastMessage;
-    @api toastVariant;
-    @api toastMode;
-    @api runInSystemMode;
-    @api recordId;
-    channelName = '/event/ToastEvent__e';
-    subscription = {};
+    // New/updated props
+    @api channelName = '/event/TostEvent__e'; // default from the repo/package
+    @api useRecordIdAsKey = false;            // when placed on a record page
+    @api recordId;                            // auto-populated by framework on record pages
+
+    subscription;
 
     connectedCallback() {
-        this.toastKeys = this.toastKeys ? this.toastKeys.split(',').map(key => key.trim()) : '';
-        const ci = this;
-        const toastCallback = function(response) {
-            let toastData = response['data']['payload'];
-            if(toastData) {
-                toastData = ci.checkForNameSpace(toastData);
-            }
-            if(
-                toastData &&
-                toastData['Key__c'] &&
-                ci.toastKeys.includes(toastData['Key__c']) &&
-                (
-                    ci.runInSystemMode ||
-                    (toastData['CreatedById'] === currentUserId)
-                ) &&
-                (
-                    toastData['RecordId__c'] && ci.recordId ? toastData['RecordId__c'] === ci.recordId : true
-                )
-            ) {
-                const toastEvent = new ShowToastEvent({
-                    title: toastData['Title__c'] ? toastData['Title__c'] : ci.toastTitle,
-                    message: toastData['Message__c'] ? toastData['Message__c'] : ci.toastMessage,
-                    variant: toastData['Variant__c'] ? toastData['Variant__c'] : ci.toastVariant,
-                    mode: toastData['Mode__c'] ? toastData['Mode__c'] : ci.toastMode
-                });
-                ci.dispatchEvent(toastEvent);
-            }
-        }
-        subscribe(this.channelName, -1, toastCallback).then(response => {
-            console.log('Subscribed to Platform Event Toast');
-            this.subscription = response;
-        });
+        this.subscribeToChannel();
         onError(error => {
-            console.log('Error in Platform Event Toast');
-            console.log(error);
+            // Optional: surface an error toast so admins know what's wrong
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Platform Event Toast – subscription error',
+                    message: (error && error.message) || 'See console for details',
+                    variant: 'error',
+                    mode: 'sticky'
+                })
+            );
+            // eslint-disable-next-line no-console
+            console.error('EMP API error', JSON.stringify(error));
         });
     }
 
     disconnectedCallback() {
-        unsubscribe(this.subscription, response => {
-            console.log('Un-Subscribed from Platform Event Toast');
-            console.log(response);
-        });
+        if (this.subscription) {
+            unsubscribe(this.subscription);
+            this.subscription = null;
+        }
     }
 
-    checkForNameSpace(oldRecord) {
-        let newRecord = {};
-        for(let key in oldRecord) {
-            if(key.includes('Message__c')) {
-                newRecord['Message__c'] = oldRecord[key];
-            } else if(key.includes('Variant__c')) {
-                newRecord['Variant__c'] = oldRecord[key];
-            } else if(key.includes('Mode__c')) {
-                newRecord['Mode__c'] = oldRecord[key];
-            } else if(key.includes('Title__c')) {
-                newRecord['Title__c'] = oldRecord[key];
-            } else if(key.includes('Key__c')) {
-                newRecord['Key__c'] = oldRecord[key];
-            } else if(key.includes('RecordId__c')) {
-                newRecord['RecordId__c'] = oldRecord[key];
-            } else {
-                newRecord[key] = oldRecord[key];
-            }
+    async subscribeToChannel() {
+        const replayId = -1; // newest events only
+        this.subscription = await subscribe(this.channelName, replayId, (event) =>
+            this.handleEvent(event)
+        );
+    }
+
+    handleEvent(message) {
+        const p = message?.data?.payload || {};
+
+        // Respect "key" filter. If useRecordIdAsKey=true on a record page, recordId is the expected key.
+        const expectedKey = this.useRecordIdAsKey && this.recordId ? this.recordId : this.key;
+        if (expectedKey && p.Key__c !== expectedKey) return;
+
+        // If not running in system mode, optionally honor a targeted user field if you have one
+        // (Remove this block if your platform event doesn’t have TargetUserId__c)
+        if (!this.runInSystemMode && p.TargetUserId__c && p.TargetUserId__c !== userId) return;
+
+        // Build and fire the standard toast
+        const title = p.Title__c || 'Notice';
+        const messageText = p.Message__c || '';
+        const variant = (p.Variant__c || 'info').toLowerCase();       // info | success | warning | error
+        const mode = (p.Mode__c || 'dismissable').toLowerCase();      // dismissable | pester | sticky
+
+        // Optional messageData JSON (for links/placeholders)
+        let messageData = [];
+        if (p.MessageData__c) {
+            try { messageData = JSON.parse(p.MessageData__c); } catch (e) { /* ignore */ }
         }
-        return newRecord;
+
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title,
+                message: messageText,
+                variant,
+                mode,
+                messageData
+            })
+        );
     }
 }
