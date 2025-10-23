@@ -13,6 +13,36 @@
     <targetConfigs>
         <targetConfig targets="lightning__RecordPage">
             <property 
+                name="toastTitle" 
+                type="String" 
+                label="Toast Title" 
+                description="Override title for all toasts (optional)"
+                default=""/>
+            <property 
+                name="toastMessage" 
+                type="String" 
+                label="Toast Message" 
+                description="Override message for all toasts (optional)"
+                default=""/>
+            <property 
+                name="toastVariant" 
+                type="String" 
+                label="Toast Variant" 
+                description="Override variant: success, error, warning, info (optional)"
+                default=""/>
+            <property 
+                name="toastKeys" 
+                type="String" 
+                label="Toast Keys (comma separated)" 
+                description="Filter toasts by key values (optional)"
+                default=""/>
+            <property 
+                name="toastMode" 
+                type="String" 
+                label="Toast Mode" 
+                description="Override mode: dismissable, pester, sticky (optional)"
+                default=""/>
+            <property 
                 name="runInSystemMode" 
                 type="Boolean" 
                 label="Run in System Mode" 
@@ -20,6 +50,36 @@
                 default="false"/>
         </targetConfig>
         <targetConfig targets="lightning__AppPage,lightning__HomePage,lightning__UtilityBar">
+            <property 
+                name="toastTitle" 
+                type="String" 
+                label="Toast Title" 
+                description="Override title for all toasts (optional)"
+                default=""/>
+            <property 
+                name="toastMessage" 
+                type="String" 
+                label="Toast Message" 
+                description="Override message for all toasts (optional)"
+                default=""/>
+            <property 
+                name="toastVariant" 
+                type="String" 
+                label="Toast Variant" 
+                description="Override variant: success, error, warning, info (optional)"
+                default=""/>
+            <property 
+                name="toastKeys" 
+                type="String" 
+                label="Toast Keys (comma separated)" 
+                description="Filter toasts by key values (optional)"
+                default=""/>
+            <property 
+                name="toastMode" 
+                type="String" 
+                label="Toast Mode" 
+                description="Override mode: dismissable, pester, sticky (optional)"
+                default=""/>
             <property 
                 name="runInSystemMode" 
                 type="Boolean" 
