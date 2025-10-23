@@ -3,8 +3,15 @@ import { subscribe, unsubscribe, onError } from 'lightning/empApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class PlatformEventToast extends LightningElement {
-    // Add @api recordId to capture the record ID when on a record page
+    // Add record ID for context awareness
     @api recordId;
+    
+    // Keep existing properties for backward compatibility
+    @api toastTitle;
+    @api toastMessage; 
+    @api toastVariant;
+    @api toastKeys;
+    @api toastMode;
     @api runInSystemMode = false;
     
     channelName = '/event/Toast_Event__e';
@@ -40,6 +47,14 @@ export default class PlatformEventToast extends LightningElement {
             return true;
         }
 
+        // Check if the toast matches the key filter (if specified)
+        if (this.toastKeys && toastEvent.Key__c) {
+            const keys = this.toastKeys.split(',').map(key => key.trim());
+            if (!keys.includes(toastEvent.Key__c)) {
+                return false;
+            }
+        }
+
         // If a record ID is specified in the toast event and we're on a record page
         if (toastEvent.Record_Id__c && this.recordId) {
             // Only show if the record IDs match
@@ -55,12 +70,19 @@ export default class PlatformEventToast extends LightningElement {
     }
 
     showToast(toastEvent) {
+        // Use configured properties if available, otherwise use platform event data
+        const title = this.toastTitle || toastEvent.Title__c || 'Notification';
+        const message = this.toastMessage || toastEvent.Message__c || '';
+        const variant = this.toastVariant || (toastEvent.Type__c ? toastEvent.Type__c.toLowerCase() : 'info');
+        const mode = this.toastMode || (toastEvent.Mode__c ? toastEvent.Mode__c.toLowerCase() : 'dismissable');
+
         const event = new ShowToastEvent({
-            title: toastEvent.Title__c || 'Notification',
-            message: toastEvent.Message__c || '',
-            variant: toastEvent.Type__c ? toastEvent.Type__c.toLowerCase() : 'info',
-            mode: toastEvent.Mode__c ? toastEvent.Mode__c.toLowerCase() : 'dismissable'
+            title: title,
+            message: message,
+            variant: variant,
+            mode: mode
         });
+        
         this.dispatchEvent(event);
     }
 
