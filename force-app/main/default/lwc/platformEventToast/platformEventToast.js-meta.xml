@@ -3,7 +3,7 @@
     <apiVersion>57.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Platform Event Toast</masterLabel>
-    <description>Toast notification component that listens to platform events</description>
+    <description>Toast notification component for Lightning pages</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
@@ -11,80 +11,46 @@
         <target>lightning__UtilityBar</target>
     </targets>
     <targetConfigs>
-        <targetConfig targets="lightning__RecordPage">
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightning__UtilityBar">
             <property 
                 name="toastTitle" 
                 type="String" 
                 label="Toast Title" 
-                description="Override title for all toasts (optional)"
-                default=""/>
+                description="Title of the toast message"
+                default="Welcome"/>
             <property 
                 name="toastMessage" 
                 type="String" 
                 label="Toast Message" 
-                description="Override message for all toasts (optional)"
-                default=""/>
+                description="Message to display. Use {recordId} to include record ID"
+                default="Page loaded successfully"/>
             <property 
                 name="toastVariant" 
                 type="String" 
                 label="Toast Variant" 
-                description="Override variant: success, error, warning, info (optional)"
-                default=""/>
-            <property 
-                name="toastKeys" 
-                type="String" 
-                label="Toast Keys (comma separated)" 
-                description="Filter toasts by key values (optional)"
-                default=""/>
+                datasource="success,error,warning,info"
+                description="Toast style: success, error, warning, info"
+                default="success"/>
             <property 
                 name="toastMode" 
                 type="String" 
-                label="Toast Mode" 
-                description="Override mode: dismissable, pester, sticky (optional)"
-                default=""/>
+                label="Toast Mode"
+                datasource="dismissable,pester,sticky" 
+                description="Toast behavior: dismissable, pester, sticky"
+                default="dismissable"/>
             <property 
-                name="runInSystemMode" 
+                name="showDelay" 
+                type="Integer" 
+                label="Show Delay (ms)" 
+                description="Delay before showing toast in milliseconds"
+                default="1000"
+                min="0"
+                max="10000"/>
+            <property 
+                name="showOnlyOnce" 
                 type="Boolean" 
-                label="Run in System Mode" 
-                description="If checked, toasts will be visible to all users regardless of who triggered them"
-                default="false"/>
-        </targetConfig>
-        <targetConfig targets="lightning__AppPage,lightning__HomePage,lightning__UtilityBar">
-            <property 
-                name="toastTitle" 
-                type="String" 
-                label="Toast Title" 
-                description="Override title for all toasts (optional)"
-                default=""/>
-            <property 
-                name="toastMessage" 
-                type="String" 
-                label="Toast Message" 
-                description="Override message for all toasts (optional)"
-                default=""/>
-            <property 
-                name="toastVariant" 
-                type="String" 
-                label="Toast Variant" 
-                description="Override variant: success, error, warning, info (optional)"
-                default=""/>
-            <property 
-                name="toastKeys" 
-                type="String" 
-                label="Toast Keys (comma separated)" 
-                description="Filter toasts by key values (optional)"
-                default=""/>
-            <property 
-                name="toastMode" 
-                type="String" 
-                label="Toast Mode" 
-                description="Override mode: dismissable, pester, sticky (optional)"
-                default=""/>
-            <property 
-                name="runInSystemMode" 
-                type="Boolean" 
-                label="Run in System Mode" 
-                description="If checked, toasts will be visible to all users regardless of who triggered them"
+                label="Show Only Once Per Session" 
+                description="If checked, toast will only show once per browser session for each record"
                 default="false"/>
         </targetConfig>
     </targetConfigs>
