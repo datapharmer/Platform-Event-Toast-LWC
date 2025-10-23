@@ -3,7 +3,7 @@
     <apiVersion>57.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Platform Event Toast</masterLabel>
-    <description>Toast notification component for Lightning pages</description>
+    <description>Toast notification component with platform event and page load support</description>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__HomePage</target>
@@ -12,37 +12,64 @@
     </targets>
     <targetConfigs>
         <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage,lightning__UtilityBar">
+            <!-- Keep ALL existing properties -->
             <property 
                 name="toastTitle" 
                 type="String" 
                 label="Toast Title" 
-                description="Title of the toast message"
-                default="Welcome"/>
+                description="Override title for all toasts (optional)"
+                default=""/>
             <property 
                 name="toastMessage" 
                 type="String" 
                 label="Toast Message" 
-                description="Message to display. Use {recordId} to include record ID"
-                default="Page loaded successfully"/>
+                description="Override message for all toasts. Use {recordId} for record ID"
+                default=""/>
             <property 
                 name="toastVariant" 
                 type="String" 
                 label="Toast Variant" 
                 datasource="success,error,warning,info"
-                description="Toast style: success, error, warning, info"
-                default="success"/>
+                description="Override variant: success, error, warning, info (optional)"
+                default=""/>
+            <property 
+                name="toastKeys" 
+                type="String" 
+                label="Toast Keys (comma separated)" 
+                description="Filter platform event toasts by key values (optional)"
+                default=""/>
             <property 
                 name="toastMode" 
                 type="String" 
                 label="Toast Mode"
                 datasource="dismissable,pester,sticky" 
-                description="Toast behavior: dismissable, pester, sticky"
-                default="dismissable"/>
+                description="Override mode: dismissable, pester, sticky (optional)"
+                default=""/>
+            <property 
+                name="runInSystemMode" 
+                type="Boolean" 
+                label="Run in System Mode" 
+                description="For platform events: show toasts to all users"
+                default="false"/>
+            
+            <!-- New properties for page load functionality -->
+            <property 
+                name="usePlatformEvents" 
+                type="Boolean" 
+                label="Use Platform Events" 
+                description="Enable platform event listening (uncheck for page load only)"
+                default="true"/>
+            <property 
+                name="showOnPageLoad" 
+                type="Boolean" 
+                label="Show Toast on Page Load" 
+                description="Show toast when page loads (works without platform events)"
+                default="false"/>
             <property 
                 name="showDelay" 
                 type="Integer" 
-                label="Show Delay (ms)" 
-                description="Delay before showing toast in milliseconds"
+                label="Page Load Delay (ms)" 
+                description="Delay before showing page load toast"
                 default="1000"
                 min="0"
                 max="10000"/>
@@ -50,7 +77,7 @@
                 name="showOnlyOnce" 
                 type="Boolean" 
                 label="Show Only Once Per Session" 
-                description="If checked, toast will only show once per browser session for each record"
+                description="Page load toast shows only once per browser session"
                 default="false"/>
         </targetConfig>
     </targetConfigs>
